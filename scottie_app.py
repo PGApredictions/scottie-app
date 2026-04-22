@@ -9,48 +9,16 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     p_top10 = np.mean(ranks <= 10) * 100
     p_top20 = np.mean(ranks <= 20) * 100
     p_win = np.mean(ranks == 1) * 100
-    avg_rank = np.mean(ranks)
-    return round(p_top5, 1), round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
+    return round(p_top5, 1), round(p_top10, 1), round(p_top20, 1), round(p_win, 1)
 
-# Clean masculine style you liked
 st.markdown("""
 <style>
-    .stApp {
-        background-color: #0f172a;
-        color: #e2e8f0;
-    }
-    h1 {
-        color: #f8fafc;
-        font-family: 'Georgia', serif;
-        font-weight: 700;
-        letter-spacing: 1px;
-    }
-    .stButton>button {
-        background-color: #b91c1c;
-        color: white;
-        font-weight: bold;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 24px;
-    }
-    /* Red for No Entry */
-    .stError {
-        background-color: #7f1d1d !important;
-        border-left: 5px solid #ef4444;
-        color: #fee2e2;
-    }
-    /* Yellow for No Action */
-    .stWarning {
-        background-color: #78350f !important;
-        border-left: 5px solid #fbbf24;
-        color: #fef3c7;
-    }
-    /* Black for Latest SG */
-    .stInfo {
-        background-color: #111827 !important;
-        border-left: 5px solid #64748b;
-        color: #f1f5f9;
-    }
+    .stApp { background-color: #0f172a; color: #e2e8f0; }
+    h1 { color: #f8fafc; font-family: 'Georgia', serif; font-weight: 700; }
+    .stButton>button { background-color: #b91c1c; color: white; font-weight: bold; border-radius: 8px; padding: 12px 24px; }
+    .stError { background-color: #7f1d1d !important; border-left: 5px solid #ef4444; color: #fee2e2; }
+    .stWarning { background-color: #78350f !important; border-left: 5px solid #fbbf24; color: #fef3c7; }
+    .stInfo { background-color: #111827 !important; border-left: 5px solid #64748b; color: #f1f5f9; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -112,51 +80,46 @@ else:
 stage = st.selectbox("Current Tournament Stage", ["Pre-Tournament", "After Round 1", "After Cut (Post-R2)"])
 
 st.subheader("Current Market Implied Probabilities (%)")
-win_market = st.number_input("Win Market (%)", 0, 100, 22, step=1) / 100.0
-top5_market = st.number_input("Top 5 Market (%)", 0, 100, 28, step=1) / 100.0
-top10_market = st.number_input("Top 10 Market (%)", 0, 100, 45, step=1) / 100.0
-top20_market = st.number_input("Top 20 Market (%)", 0, 100, 65, step=1) / 100.0
+win_market = st.number_input("Win Market (%)", 0, 100, 1, step=1) / 100.0
+top5_market = st.number_input("Top 5 Market (%)", 0, 100, 20, step=1) / 100.0
+top10_market = st.number_input("Top 10 Market (%)", 0, 100, 30, step=1) / 100.0
+top20_market = st.number_input("Top 20 Market (%)", 0, 100, 40, step=1) / 100.0
 
 field_type = st.selectbox("Tournament Type", ["Signature Event (82 players)", "Full-Field (~150 players)"])
 field_size = 82 if field_type.startswith("Signature") else 150
 
 if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
-    p_top5, p10, p20, p_win, avg_rank = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
+    p_top5, p10, p20, p_win = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
     
     st.balloons()
     st.success(f"**Win probability: {p_win}%**")
     st.success(f"**Top 5 probability: {p_top5}%**")
     st.success(f"**Top 10 probability: {p10}%**")
     st.success(f"**Top 20 probability: {p20}%**")
-    st.info(f"**Projected finishing position: {avg_rank}**")
 
     st.subheader("💰 Recommended Betting Plan")
     st.caption(f"**Stage:** {stage} • **Course:** {selected_course}")
 
-    edge_win = p_win - (win_market * 100)
-    if (stage == "Pre-Tournament" and edge_win >= 15 and avg_rank <= 3) or \
-       (stage == "After Round 1" and edge_win >= 12 and avg_rank <= 4) or \
-       (stage == "After Cut (Post-R2)" and edge_win >= 12 and avg_rank <= 3):
-        st.success("**WIN: ENTER Base Size** 🔥 Elite outright value")
+    # WIN
+    if p_win - (win_market * 100) >= 15:
+        st.success("**WIN: ENTER Base Size** 🔥")
     else:
         st.error("**WIN: No Entry**")
 
-    edge5 = p_top5 - (top5_market * 100)
-    if edge5 >= 14 and avg_rank <= 8:
-        st.success("**TOP 5: ENTER Base Size** ✅ Strong contention play")
+    # TOP 5
+    if p_top5 - (top5_market * 100) >= 14:
+        st.success("**TOP 5: ENTER Base Size** ✅")
     else:
         st.warning("**TOP 5: No Action**")
 
-    edge10 = p10 - (top10_market * 100)
-    if (stage == "Pre-Tournament" and edge10 >= 12 and avg_rank <= 11) or \
-       (stage == "After Round 1" and edge10 >= 10 and avg_rank <= 12) or \
-       (stage == "After Cut (Post-R2)" and edge10 >= 10 and avg_rank <= 13):
-        st.success("**TOP 10: ENTER Base Size** ✅ Strong edge")
+    # TOP 10
+    if p10 - (top10_market * 100) >= 12:
+        st.success("**TOP 10: ENTER Base Size** ✅")
     else:
         st.error("**TOP 10: No Entry**")
 
-    edge20 = p20 - (top20_market * 100)
-    if edge20 >= 10 and avg_rank <= 23:
+    # TOP 20
+    if p20 - (top20_market * 100) >= 10:
         st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor")
     else:
         st.warning("**TOP 20: No Action**")
