@@ -9,7 +9,7 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     p_top20 = np.mean(ranks <= 20) * 100
     return round(p_top10, 1), round(p_top20, 1)
 
-st.title("🧢 Scottie Top 10/20 Predictor")
+st.title("🧢 Scheffler Top 10/20")
 st.markdown("**Simple Strokes Gained model — updated weekly with your estimate**")
 
 base_mu = st.slider("Expected SG per round (μ)", 1.0, 3.0, 2.0, 0.05)
