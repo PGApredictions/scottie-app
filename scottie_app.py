@@ -11,13 +11,14 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     p_win = np.mean(ranks == 1) * 100
     return round(p_top5, 1), round(p_top10, 1), round(p_top20, 1), round(p_win, 1)
 
+# Clean masculine style
 st.markdown("""
 <style>
     .stApp { background-color: #0f172a; color: #e2e8f0; }
     h1 { color: #f8fafc; font-family: 'Georgia', serif; font-weight: 700; }
     .stButton>button { background-color: #b91c1c; color: white; font-weight: bold; border-radius: 8px; padding: 12px 24px; }
     .stError { background-color: #7f1d1d !important; border-left: 5px solid #ef4444; color: #fee2e2; }
-    .stWarning { background-color: #78350f !important; border-left: 5px solid #fbbf24; color: #fef3c7; }
+    .stSuccess { background-color: #14532d !important; border-left: 5px solid #4ade80; color: #ecfdf5; }
     .stInfo { background-color: #111827 !important; border-left: 5px solid #64748b; color: #f1f5f9; }
 </style>
 """, unsafe_allow_html=True)
@@ -91,6 +92,7 @@ field_size = 82 if field_type.startswith("Signature") else 150
 if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     p_top5, p10, p20, p_win = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
     
+    st.balloons()   # You can delete this line if you want to remove balloons
     st.success(f"**Win probability: {p_win}%**")
     st.success(f"**Top 5 probability: {p_top5}%**")
     st.success(f"**Top 10 probability: {p10}%**")
@@ -109,7 +111,7 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     if p_top5 - (top5_market * 100) >= 14:
         st.success("**TOP 5: ENTER Base Size** ✅")
     else:
-        st.warning("**TOP 5: No Action**")
+        st.error("**TOP 5: No Entry**")
 
     # TOP 10
     if p10 - (top10_market * 100) >= 12:
@@ -121,7 +123,7 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     if p20 - (top20_market * 100) >= 10:
         st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor")
     else:
-        st.warning("**TOP 20: No Action**")
+        st.error("**TOP 20: No Entry**")
 
     st.caption("Follow your full rules for sizing, adds (Rounds 1-3 only), and max exposure.")
 
