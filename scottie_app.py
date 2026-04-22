@@ -11,19 +11,20 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     avg_rank = np.mean(ranks)
     return round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
 
-st.title("🧢 Scottie Performance Probabilities + Plan")
+st.title("🧢 Scottie Top 10/20 Predictor + Betting Plan")
 st.markdown("**Strokes Gained model with your exact rules-based betting framework**")
 
 # Latest SG
 latest_sg = 2.05
-st.info(f"**Latest known 2026 SG: Total = +{latest_sg:.2f}** (as of April 21, 2026)")
+st.info(f"**Latest known 2026 SG: Total ≈ +{latest_sg:.2f}** (as of April 21, 2026 — post-RBC Heritage)")
 
 base_mu = st.slider("Expected SG per round (μ)", 1.0, 3.0, latest_sg, 0.05)
 
-# Expanded alphabetical course list
+# Expanded alphabetical course list + Aronimink
 course_options = {
     "Select a course...": 0.00,
     "Arnold Palmer Bay Hill Club": 0.55,
+    "Aronimink Golf Club (Donald Ross)": 0.40,
     "Augusta National Golf Club (Masters)": 0.50,
     "Bethpage Black": 0.25,
     "Caves Valley Golf Club": 0.20,
@@ -67,13 +68,26 @@ elif boost > 0.00:
 else:
     st.info(f"**Conservative μ = {final_mu:.2f}** (no boost)")
 
-# Tournament stage & market prices
+# Live Leaderboard Integration
+st.subheader("📊 Live Leaderboard Integration")
+st.markdown("""
+**Current Event:** Zurich Classic of New Orleans (team event — April 23-26, 2026)  
+**Next Major Events:** Cadillac Championship (April 30–May 3), Truist Championship (May 7–10)
+
+**How to use live data:**
+1. Open the official PGA Tour leaderboard: [pgatour.com/leaderboard](https://www.pgatour.com/leaderboard)
+2. Check Scheffler's position, strokes gained so far, and strokes relative to the field.
+3. Adjust the **Expected SG (μ)** slider up/down based on his current ball-striking.
+4. Update the **Tournament Stage** below.
+5. Re-run the simulation for an updated betting plan.
+""")
+
 stage = st.selectbox("Current Tournament Stage", ["Pre-Tournament", "After Round 1", "After Cut (Post-R2)"])
 
 st.subheader("Current Market Implied Probabilities (%)")
-win_market = st.number_input("Win Market", 0, 100, 22, step=1) / 100.0
-top10_market = st.number_input("Top 10 Market", 0, 100, 45, step=1) / 100.0
-top20_market = st.number_input("Top 20 Market", 0, 100, 65, step=1) / 100.0
+win_market = st.number_input("Win Market (%)", 0, 100, 22, step=1) / 100.0
+top10_market = st.number_input("Top 10 Market (%)", 0, 100, 45, step=1) / 100.0
+top20_market = st.number_input("Top 20 Market (%)", 0, 100, 65, step=1) / 100.0
 
 field_type = st.selectbox("Tournament Type", ["Signature Event (82 players)", "Full-Field (~150 players)"])
 field_size = 82 if field_type.startswith("Signature") else 150
@@ -87,11 +101,11 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     st.success(f"**Top 20 probability: {p20}%**")
     st.info(f"**Projected finishing position: {avg_rank}**")
 
-    # ==================== BETTING PLAN (your exact rules) ====================
+    # Betting Plan using your exact rules
     st.subheader("💰 Recommended Betting Plan")
-    st.caption(f"**Stage:** {stage} • **Course:** {selected_course}")
+    st.caption(f"**Stage:** {stage} • **Course:** {selected_course} • **Live Edge Check**")
 
-    # Top 10 Plan
+    # Top 10
     edge10 = p10 - (top10_market * 100)
     if stage == "Pre-Tournament":
         if edge10 >= 12 and avg_rank <= 11:
@@ -109,14 +123,14 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
         else:
             st.warning("**TOP 10: No Entry**")
 
-    # Top 20 Plan (similar logic)
+    # Top 20
     edge20 = p20 - (top20_market * 100)
     if edge20 >= 10 and avg_rank <= 23:
         st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor play")
     else:
         st.info("**TOP 20: No Action** (edge too small)")
 
-    # Win Plan
+    # Win
     edge_win = p_win - (win_market * 100)
     if stage == "Pre-Tournament":
         if edge_win >= 15 and avg_rank <= 3:
@@ -134,9 +148,15 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
         else:
             st.warning("**WIN: No Entry**")
 
-    st.caption("Follow your full rules for position sizing, adds, and max exposure. Update market prices live each round.")
+    st.caption("Follow your full rules for sizing, adds (Rounds 1-3 only), and max exposure. Update with live leaderboard/SG each round.")
 
 with st.expander("📖 How to Use This App"):
-    st.markdown("1. Set SG μ (defaults to latest season value)\n2. Pick the course\n3. Enter current betting market prices\n4. Select stage\n5. Run → get simulation + exact betting plan per your rules")
+    st.markdown("""
+    1. Set μ (defaults to latest season value)  
+    2. Pick the course (boost auto-applies)  
+    3. Check live leaderboard → adjust μ/stage  
+    4. Enter current market prices  
+    5. Run → get simulation + rules-based betting plan
+    """)
 
 st.caption("Built with pure Strokes Gained Monte Carlo • Follows your complete rules framework")
