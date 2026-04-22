@@ -5,22 +5,54 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     scottie_total = np.random.normal(mu_sg_per_round * 4, sigma_per_round * np.sqrt(4), n_sims)
     others_total = np.random.normal(0, sigma_per_round * np.sqrt(4), size=(n_sims, field_size - 1))
     ranks = np.sum(others_total > scottie_total[:, np.newaxis], axis=1) + 1
+    p_top5 = np.mean(ranks <= 5) * 100
     p_top10 = np.mean(ranks <= 10) * 100
     p_top20 = np.mean(ranks <= 20) * 100
     p_win = np.mean(ranks == 1) * 100
     avg_rank = np.mean(ranks)
-    return round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
+    return round(p_top5, 1), round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
+
+# Custom CSS for timeless, masculine, edgy gentleman style
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #0f172a;
+        color: #e2e8f0;
+    }
+    h1 {
+        color: #f8fafc;
+        font-family: 'Georgia', serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+    .stButton>button {
+        background-color: #b91c1c;
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+    }
+    .stSuccess {
+        background-color: #1e2937;
+        border-left: 5px solid #f59e0b;
+    }
+    .stWarning {
+        background-color: #1e2937;
+        border-left: 5px solid #64748b;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("⛳ Scheffler Sharps ⛳")
 st.markdown("**Insights on Scottie Scheffler**")
 
-# Latest SG
 latest_sg = 2.05
 st.info(f"**Latest known 2026 SG: Total ≈ +{latest_sg:.2f}** (as of April 21, 2026 — post-RBC Heritage)")
 
 base_mu = st.slider("Expected SG per round (μ)", 1.0, 3.0, latest_sg, 0.05)
 
-# Alphabetical course list with Aronimink
+# Alphabetical course list
 course_options = {
     "Select a course...": 0.00,
     "Arnold Palmer Bay Hill Club": 0.55,
@@ -72,6 +104,7 @@ stage = st.selectbox("Current Tournament Stage", ["Pre-Tournament", "After Round
 
 st.subheader("Current Market Implied Probabilities (%)")
 win_market = st.number_input("Win Market (%)", 0, 100, 22, step=1) / 100.0
+top5_market = st.number_input("Top 5 Market (%)", 0, 100, 28, step=1) / 100.0
 top10_market = st.number_input("Top 10 Market (%)", 0, 100, 45, step=1) / 100.0
 top20_market = st.number_input("Top 20 Market (%)", 0, 100, 65, step=1) / 100.0
 
@@ -79,10 +112,11 @@ field_type = st.selectbox("Tournament Type", ["Signature Event (82 players)", "F
 field_size = 82 if field_type.startswith("Signature") else 150
 
 if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
-    p10, p20, p_win, avg_rank = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
+    p_top5, p10, p20, p_win, avg_rank = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
     
     st.balloons()
     st.success(f"**Win probability: {p_win}%**")
+    st.success(f"**Top 5 probability: {p_top5}%**")
     st.success(f"**Top 10 probability: {p10}%**")
     st.success(f"**Top 20 probability: {p20}%**")
     st.info(f"**Projected finishing position: {avg_rank}**")
@@ -91,57 +125,46 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     st.subheader("💰 Recommended Betting Plan")
     st.caption(f"**Stage:** {stage} • **Course:** {selected_course}")
 
-    edge10 = p10 - (top10_market * 100)
-    if stage == "Pre-Tournament":
-        if edge10 >= 12 and avg_rank <= 11:
-            st.success("**TOP 10: ENTER Base Size** ✅ Strong pre-tournament edge")
-        else:
-            st.warning("**TOP 10: No Entry**")
-    elif stage == "After Round 1":
-        if edge10 >= 10 and avg_rank <= 12:
-            st.success("**TOP 10: ENTER Base Size** ✅ Good R1 position")
-        else:
-            st.warning("**TOP 10: No Entry**")
+    # Win
+    edge_win = p_win - (win_market * 100)
+    if (stage == "Pre-Tournament" and edge_win >= 15 and avg_rank <= 3) or \
+       (stage == "After Round 1" and edge_win >= 12 and avg_rank <= 4) or \
+       (stage == "After Cut (Post-R2)" and edge_win >= 12 and avg_rank <= 3):
+        st.success("**WIN: ENTER Base Size** 🔥 Elite outright value")
     else:
-        if edge10 >= 10 and avg_rank <= 13:
-            st.success("**TOP 10: ENTER Base Size** ✅ Made cut + solid position")
-        else:
-            st.warning("**TOP 10: No Entry**")
+        st.warning("**WIN: No Entry**")
 
+    # Top 5
+    edge5 = p_top5 - (top5_market * 100)
+    if edge5 >= 14 and avg_rank <= 8:
+        st.success("**TOP 5: ENTER Base Size** ✅ Strong contention play")
+    else:
+        st.info("**TOP 5: No Action** (edge too small)")
+
+    # Top 10
+    edge10 = p10 - (top10_market * 100)
+    if (stage == "Pre-Tournament" and edge10 >= 12 and avg_rank <= 11) or \
+       (stage == "After Round 1" and edge10 >= 10 and avg_rank <= 12) or \
+       (stage == "After Cut (Post-R2)" and edge10 >= 10 and avg_rank <= 13):
+        st.success("**TOP 10: ENTER Base Size** ✅ Strong edge")
+    else:
+        st.warning("**TOP 10: No Entry**")
+
+    # Top 20
     edge20 = p20 - (top20_market * 100)
     if edge20 >= 10 and avg_rank <= 23:
-        st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor play")
+        st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor")
     else:
         st.info("**TOP 20: No Action** (edge too small)")
 
-    edge_win = p_win - (win_market * 100)
-    if stage == "Pre-Tournament":
-        if edge_win >= 15 and avg_rank <= 3:
-            st.success("**WIN: ENTER Base Size** 🔥 Elite outright value")
-        else:
-            st.warning("**WIN: No Entry**")
-    elif stage == "After Round 1":
-        if edge_win >= 12 and avg_rank <= 4:
-            st.success("**WIN: ENTER Base Size** 🔥 In contention")
-        else:
-            st.warning("**WIN: No Entry**")
-    else:
-        if edge_win >= 12 and avg_rank <= 3:
-            st.success("**WIN: ENTER Base Size** 🔥 Strong contention")
-        else:
-            st.warning("**WIN: No Entry**")
-
-    st.caption("Follow your full rules for position sizing, adds (Rounds 1-3 only), and max exposure.")
+    st.caption("Follow your full rules for sizing, adds (Rounds 1-3 only), and max exposure.")
 
 with st.expander("📖 How to Use This App"):
     st.markdown("""
-    1. Set **Expected SG per round (μ)** (defaults to latest season value)  
+    1. Set **Expected SG per round (μ)**  
     2. Choose the **Course** — boost applies automatically  
-    3. Select tournament **Stage**  
-    4. Enter current **Market Prices**  
-    5. Tap **Run Simulation & Generate Betting Plan**
-    
-    **Tip**: Top 20 is usually the safest and most reliable play.
+    3. Select **Stage** and enter current **Market Prices**  
+    4. Tap **Run Simulation & Generate Betting Plan**
     """)
 
 st.caption("Built with pure Strokes Gained Monte Carlo • Follows your complete rules framework")
