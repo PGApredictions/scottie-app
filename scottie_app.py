@@ -5,25 +5,22 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     scottie_total = np.random.normal(mu_sg_per_round * 4, sigma_per_round * np.sqrt(4), n_sims)
     others_total = np.random.normal(0, sigma_per_round * np.sqrt(4), size=(n_sims, field_size - 1))
     ranks = np.sum(others_total > scottie_total[:, np.newaxis], axis=1) + 1
-    
     p_top10 = np.mean(ranks <= 10) * 100
     p_top20 = np.mean(ranks <= 20) * 100
     p_win = np.mean(ranks == 1) * 100
     avg_rank = np.mean(ranks)
-    
     return round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
 
-st.title("🧢 Scheffler Probable Performance")
-st.markdown("**Simple Strokes Gained model — updated weekly with your estimate**")
+st.title("🧢 Scottie Top 10/20 Predictor + Betting Plan")
+st.markdown("**Strokes Gained model with your exact rules-based betting framework**")
 
-# Latest known SG (manually updated by you or me)
+# Latest SG
 latest_sg = 2.05
-st.info(f"**Latest known 2026 season SG: Total = +{latest_sg:.2f}** (as of April 21, 2026 — through RBC Heritage)")
+st.info(f"**Latest known 2026 SG: Total = +{latest_sg:.2f}** (as of April 21, 2026)")
 
 base_mu = st.slider("Expected SG per round (μ)", 1.0, 3.0, latest_sg, 0.05)
-st.caption("The slider defaults to the latest season average. Adjust up or down based on recent form.")
 
-# Course dropdown (alphabetical, expanded)
+# Expanded alphabetical course list
 course_options = {
     "Select a course...": 0.00,
     "Arnold Palmer Bay Hill Club": 0.55,
@@ -66,31 +63,4 @@ final_mu = base_mu + boost
 if boost >= 0.50:
     st.success(f"✅ **Very Favorable** → Sensitive μ = {final_mu:.2f}")
 elif boost > 0.00:
-    st.success(f"✅ **Favorable** → Sensitive μ = {final_mu:.2f}")
-else:
-    st.info(f"**Conservative μ = {final_mu:.2f}** (no boost)")
-
-field_type = st.selectbox("Tournament Type", ["Signature Event (82 players)", "Full-Field (~150 players)"])
-field_size = 82 if field_type.startswith("Signature") else 150
-
-if st.button("🚀 Run Simulation", type="primary"):
-    with st.spinner("Running 20,000 simulations..."):
-        p10, p20, p_win, avg_rank = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
-    st.balloons()
-    st.success(f"**Win probability: {p_win}%**")
-    st.success(f"**Top 10 probability: {p10}%**")
-    st.success(f"**Top 20 probability: {p20}%**")
-    st.info(f"**Projected finishing position: {avg_rank}**")
-
-if st.button("🔄 Reset to Defaults"):
-    st.rerun()
-
-with st.expander("📖 How to Use This App"):
-    st.markdown("""
-    1. The app now defaults to Scottie’s latest season SG.
-    2. Choose the Course — boost applies automatically.
-    3. Pick Signature or Full-Field.
-    4. Tap Run Simulation.
-    """)
-
-st.caption("Built with pure Strokes Gained Monte Carlo • Backtested 2023–2025")
+    st.success(f"✅ **
