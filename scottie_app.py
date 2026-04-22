@@ -12,7 +12,7 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     avg_rank = np.mean(ranks)
     return round(p_top5, 1), round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
 
-# Custom CSS for timeless, masculine, edgy gentleman style
+# Clean masculine style you liked
 st.markdown("""
 <style>
     .stApp {
@@ -33,13 +33,23 @@ st.markdown("""
         border-radius: 8px;
         padding: 12px 24px;
     }
-    .stSuccess {
-        background-color: #1e2937;
-        border-left: 5px solid #f59e0b;
+    /* Red for No Entry */
+    .stError {
+        background-color: #7f1d1d !important;
+        border-left: 5px solid #ef4444;
+        color: #fee2e2;
     }
+    /* Yellow for No Action */
     .stWarning {
-        background-color: #1e2937;
+        background-color: #78350f !important;
+        border-left: 5px solid #fbbf24;
+        color: #fef3c7;
+    }
+    /* Black for Latest SG */
+    .stInfo {
+        background-color: #111827 !important;
         border-left: 5px solid #64748b;
+        color: #f1f5f9;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -52,7 +62,6 @@ st.info(f"**Latest known 2026 SG: Total ≈ +{latest_sg:.2f}** (as of April 21, 
 
 base_mu = st.slider("Expected SG per round (μ)", 1.0, 3.0, latest_sg, 0.05)
 
-# Alphabetical course list
 course_options = {
     "Select a course...": 0.00,
     "Arnold Palmer Bay Hill Club": 0.55,
@@ -121,41 +130,36 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     st.success(f"**Top 20 probability: {p20}%**")
     st.info(f"**Projected finishing position: {avg_rank}**")
 
-    # Betting Plan
     st.subheader("💰 Recommended Betting Plan")
     st.caption(f"**Stage:** {stage} • **Course:** {selected_course}")
 
-    # Win
     edge_win = p_win - (win_market * 100)
     if (stage == "Pre-Tournament" and edge_win >= 15 and avg_rank <= 3) or \
        (stage == "After Round 1" and edge_win >= 12 and avg_rank <= 4) or \
        (stage == "After Cut (Post-R2)" and edge_win >= 12 and avg_rank <= 3):
         st.success("**WIN: ENTER Base Size** 🔥 Elite outright value")
     else:
-        st.warning("**WIN: No Entry**")
+        st.error("**WIN: No Entry**")
 
-    # Top 5
     edge5 = p_top5 - (top5_market * 100)
     if edge5 >= 14 and avg_rank <= 8:
         st.success("**TOP 5: ENTER Base Size** ✅ Strong contention play")
     else:
-        st.info("**TOP 5: No Action** (edge too small)")
+        st.warning("**TOP 5: No Action**")
 
-    # Top 10
     edge10 = p10 - (top10_market * 100)
     if (stage == "Pre-Tournament" and edge10 >= 12 and avg_rank <= 11) or \
        (stage == "After Round 1" and edge10 >= 10 and avg_rank <= 12) or \
        (stage == "After Cut (Post-R2)" and edge10 >= 10 and avg_rank <= 13):
         st.success("**TOP 10: ENTER Base Size** ✅ Strong edge")
     else:
-        st.warning("**TOP 10: No Entry**")
+        st.error("**TOP 10: No Entry**")
 
-    # Top 20
     edge20 = p20 - (top20_market * 100)
     if edge20 >= 10 and avg_rank <= 23:
         st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor")
     else:
-        st.info("**TOP 20: No Action** (edge too small)")
+        st.warning("**TOP 20: No Action**")
 
     st.caption("Follow your full rules for sizing, adds (Rounds 1-3 only), and max exposure.")
 
