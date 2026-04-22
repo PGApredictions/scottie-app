@@ -13,7 +13,7 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     
     return round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
 
-st.title("🧢 Scottie Top 10/20 Predictor")
+st.title("🧢 Scheffler Probable Performance")
 st.markdown("**Simple Strokes Gained model — updated weekly with your estimate**")
 
 # Main inputs
