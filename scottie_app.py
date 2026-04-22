@@ -11,8 +11,8 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
     avg_rank = np.mean(ranks)
     return round(p_top10, 1), round(p_top20, 1), round(p_win, 1), round(avg_rank, 1)
 
-st.title("🧢 Scottie Top 10/20 Predictor + Betting Plan")
-st.markdown("**Strokes Gained model with your exact rules-based betting framework**")
+st.title("⛳ Scheffler Sharps ⛳")
+st.markdown("**Insights on Scottie Scheffler**")
 
 # Latest SG
 latest_sg = 2.05
@@ -87,11 +87,10 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     st.success(f"**Top 20 probability: {p20}%**")
     st.info(f"**Projected finishing position: {avg_rank}**")
 
-    # ==================== BETTING PLAN ====================
+    # Betting Plan
     st.subheader("💰 Recommended Betting Plan")
     st.caption(f"**Stage:** {stage} • **Course:** {selected_course}")
 
-    # Top 10 Plan
     edge10 = p10 - (top10_market * 100)
     if stage == "Pre-Tournament":
         if edge10 >= 12 and avg_rank <= 11:
@@ -103,21 +102,46 @@ if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
             st.success("**TOP 10: ENTER Base Size** ✅ Good R1 position")
         else:
             st.warning("**TOP 10: No Entry**")
-    else:  # After Cut
+    else:
         if edge10 >= 10 and avg_rank <= 13:
             st.success("**TOP 10: ENTER Base Size** ✅ Made cut + solid position")
         else:
             st.warning("**TOP 10: No Entry**")
 
-    # Top 20 Plan
     edge20 = p20 - (top20_market * 100)
     if edge20 >= 10 and avg_rank <= 23:
         st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor play")
     else:
         st.info("**TOP 20: No Action** (edge too small)")
 
-    # Win Plan
     edge_win = p_win - (win_market * 100)
     if stage == "Pre-Tournament":
         if edge_win >= 15 and avg_rank <= 3:
-            st.success("**WIN: ENTER Base Size**
+            st.success("**WIN: ENTER Base Size** 🔥 Elite outright value")
+        else:
+            st.warning("**WIN: No Entry**")
+    elif stage == "After Round 1":
+        if edge_win >= 12 and avg_rank <= 4:
+            st.success("**WIN: ENTER Base Size** 🔥 In contention")
+        else:
+            st.warning("**WIN: No Entry**")
+    else:
+        if edge_win >= 12 and avg_rank <= 3:
+            st.success("**WIN: ENTER Base Size** 🔥 Strong contention")
+        else:
+            st.warning("**WIN: No Entry**")
+
+    st.caption("Follow your full rules for position sizing, adds (Rounds 1-3 only), and max exposure.")
+
+with st.expander("📖 How to Use This App"):
+    st.markdown("""
+    1. Set **Expected SG per round (μ)** (defaults to latest season value)  
+    2. Choose the **Course** — boost applies automatically  
+    3. Select tournament **Stage**  
+    4. Enter current **Market Prices**  
+    5. Tap **Run Simulation & Generate Betting Plan**
+    
+    **Tip**: Top 20 is usually the safest and most reliable play.
+    """)
+
+st.caption("Built with pure Strokes Gained Monte Carlo • Follows your complete rules framework")
