@@ -63,4 +63,80 @@ final_mu = base_mu + boost
 if boost >= 0.50:
     st.success(f"✅ **Very Favorable** → Sensitive μ = {final_mu:.2f}")
 elif boost > 0.00:
-    st.success(f"✅ **
+    st.success(f"✅ **Favorable** → Sensitive μ = {final_mu:.2f}")
+else:
+    st.info(f"**Conservative μ = {final_mu:.2f}** (no boost)")
+
+# Tournament stage & market prices
+stage = st.selectbox("Current Tournament Stage", ["Pre-Tournament", "After Round 1", "After Cut (Post-R2)"])
+
+st.subheader("Current Market Implied Probabilities (%)")
+win_market = st.number_input("Win Market", 0, 100, 22, step=1) / 100.0
+top10_market = st.number_input("Top 10 Market", 0, 100, 45, step=1) / 100.0
+top20_market = st.number_input("Top 20 Market", 0, 100, 65, step=1) / 100.0
+
+field_type = st.selectbox("Tournament Type", ["Signature Event (82 players)", "Full-Field (~150 players)"])
+field_size = 82 if field_type.startswith("Signature") else 150
+
+if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
+    p10, p20, p_win, avg_rank = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
+    
+    st.balloons()
+    st.success(f"**Win probability: {p_win}%**")
+    st.success(f"**Top 10 probability: {p10}%**")
+    st.success(f"**Top 20 probability: {p20}%**")
+    st.info(f"**Projected finishing position: {avg_rank}**")
+
+    # ==================== BETTING PLAN (your exact rules) ====================
+    st.subheader("💰 Recommended Betting Plan")
+    st.caption(f"**Stage:** {stage} • **Course:** {selected_course}")
+
+    # Top 10 Plan
+    edge10 = p10 - (top10_market * 100)
+    if stage == "Pre-Tournament":
+        if edge10 >= 12 and avg_rank <= 11:
+            st.success("**TOP 10: ENTER Base Size** ✅ Strong pre-tournament edge")
+        else:
+            st.warning("**TOP 10: No Entry**")
+    elif stage == "After Round 1":
+        if edge10 >= 10 and avg_rank <= 12:
+            st.success("**TOP 10: ENTER Base Size** ✅ Good R1 position")
+        else:
+            st.warning("**TOP 10: No Entry**")
+    else:  # After Cut
+        if edge10 >= 10 and avg_rank <= 13:
+            st.success("**TOP 10: ENTER Base Size** ✅ Made cut + solid position")
+        else:
+            st.warning("**TOP 10: No Entry**")
+
+    # Top 20 Plan (similar logic)
+    edge20 = p20 - (top20_market * 100)
+    if edge20 >= 10 and avg_rank <= 23:
+        st.success("**TOP 20: ENTER Base Size** ✅ High-confidence floor play")
+    else:
+        st.info("**TOP 20: No Action** (edge too small)")
+
+    # Win Plan
+    edge_win = p_win - (win_market * 100)
+    if stage == "Pre-Tournament":
+        if edge_win >= 15 and avg_rank <= 3:
+            st.success("**WIN: ENTER Base Size** 🔥 Elite outright value")
+        else:
+            st.warning("**WIN: No Entry**")
+    elif stage == "After Round 1":
+        if edge_win >= 12 and avg_rank <= 4:
+            st.success("**WIN: ENTER Base Size** 🔥 In contention")
+        else:
+            st.warning("**WIN: No Entry**")
+    else:
+        if edge_win >= 12 and avg_rank <= 3:
+            st.success("**WIN: ENTER Base Size** 🔥 Strong contention")
+        else:
+            st.warning("**WIN: No Entry**")
+
+    st.caption("Follow your full rules for position sizing, adds, and max exposure. Update market prices live each round.")
+
+with st.expander("📖 How to Use This App"):
+    st.markdown("1. Set SG μ (defaults to latest season value)\n2. Pick the course\n3. Enter current betting market prices\n4. Select stage\n5. Run → get simulation + exact betting plan per your rules")
+
+st.caption("Built with pure Strokes Gained Monte Carlo • Follows your complete rules framework")
