@@ -91,7 +91,6 @@ field_size = 82 if field_type.startswith("Signature") else 150
 if st.button("🚀 Run Simulation & Generate Betting Plan", type="primary"):
     p_top5, p10, p20, p_win = scheffler_top_probs(mu_sg_per_round=final_mu, field_size=field_size)
     
-    st.balloons()
     st.success(f"**Win probability: {p_win}%**")
     st.success(f"**Top 5 probability: {p_top5}%**")
     st.success(f"**Top 10 probability: {p10}%**")
