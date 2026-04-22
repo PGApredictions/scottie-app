@@ -16,16 +16,19 @@ def scheffler_top_probs(mu_sg_per_round=2.0, field_size=82, sigma_per_round=2.8,
 st.title("🧢 Scheffler Probable Performance")
 st.markdown("**Simple Strokes Gained model — updated weekly with your estimate**")
 
-# Main inputs
-base_mu = st.slider("Expected SG per round (μ)", 1.0, 3.0, 2.0, 0.05)
-st.caption("Start with Scottie's current season SG average from pgatour.com or datagolf.com")
+# Latest known SG (manually updated by you or me)
+latest_sg = 2.05
+st.info(f"**Latest known 2026 season SG: Total = +{latest_sg:.2f}** (as of April 21, 2026 — through RBC Heritage)")
 
-# Expanded alphabetical course list with pre-assigned boosts
+base_mu = st.slider("Expected SG per round (μ)", 1.0, 3.0, latest_sg, 0.05)
+st.caption("The slider defaults to the latest season average. Adjust up or down based on recent form.")
+
+# Course dropdown (alphabetical, expanded)
 course_options = {
     "Select a course...": 0.00,
     "Arnold Palmer Bay Hill Club": 0.55,
     "Augusta National Golf Club (Masters)": 0.50,
-    "Bethpage Black (PGA Championship style)": 0.25,
+    "Bethpage Black": 0.25,
     "Caves Valley Golf Club": 0.20,
     "Colonial Country Club": 0.50,
     "Detroit Golf Club": 0.10,
@@ -82,15 +85,12 @@ if st.button("🚀 Run Simulation", type="primary"):
 if st.button("🔄 Reset to Defaults"):
     st.rerun()
 
-# How to Use
 with st.expander("📖 How to Use This App"):
     st.markdown("""
-    1. Set **Expected SG per round** to Scottie’s current season average.
-    2. Choose the **Course** — the boost is automatically applied based on his history and fit.
+    1. The app now defaults to Scottie’s latest season SG.
+    2. Choose the Course — boost applies automatically.
     3. Pick Signature or Full-Field.
-    4. Tap **Run Simulation**.
-    
-    **Tip**: Top 20 is usually the safest prop. Very Favorable courses give him the highest edge.
+    4. Tap Run Simulation.
     """)
 
 st.caption("Built with pure Strokes Gained Monte Carlo • Backtested 2023–2025")
